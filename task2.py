@@ -1,36 +1,45 @@
-def check_spell(spell, spell_dict):
-    points = 0
+from itertools import permutations
 
-    for subspell in spell_dict:
 
-        how_many = spell.count(subspell)
+def get_max_score(spell, spell_dict):
 
-        points = points + (how_many * spell_dict[subspell])
+    points = []
+    spell_copy = spell
 
-        spell = spell.split(subspell)
-        spell_parts = ""
+    # use permutation to find every subspell dictionary combination
+    for combination in list(permutations(spell_dict)):
 
-        for part in spell:
-            spell_parts = spell_parts + part
+        word_points = 0
 
-        spell = spell_parts
+        for subspell in combination:
 
-    points = points - len(spell)
+            # if subspell is in spellword, add appropriate amount of points
+            word_points += (spell.count(subspell) * spell_dict[subspell])
 
-    return points
-        
-def swich_dict(spell_dict):
+            # delete subspell from spellword
+            spell = spell.split(subspell)
 
-    first_spell = list(spell_dict)[0]
-    first_value = spell_dict[first_spell]
+            # join spellword parts
+            spell_part = ""
+            for part in spell:
+                spell_part += part
 
-    del spell_dict[first_spell]
+            # new spell, after subspell cuting off
+            spell = spell_part
 
-    spell_dict[first_spell] = first_value
+        # Subtract single letters
+        word_points -= len(spell)
 
-    print(spell_dict)
-    return spell_dict
-        
+        # get oryginal spell
+        spell = spell_copy
+        # add points to
+        points.append(word_points)
+
+    score = max(points)
+
+    return score
+
+
 def damage(spell):
     """
     Function calculating damage
@@ -39,40 +48,22 @@ def damage(spell):
     :return: points of damage
     """
 
-    subspells_dict = {'dai':5, 'ain':3, 'jee':3, 'je': 2, 'ne':2, 'ai':2, 'fe': 1}
-    points = []
+    # spells dictionary
+    spell_dict = {'dai': 5, 'ain': 3, 'jee': 3,
+                  'je': 2, 'ne': 2, 'ai': 2, 'fe': 1}
 
+    # check start and end position
     start = spell.find('fe')
     end = spell.rfind('ai')
 
     # if spell is incorect return 0
-
     if end < start or start == -1 or end == -1:
         return 0
 
     # cut unnecessary letters
-    spell = spell[start:(end+2)]
-    subspells_dict_lenght = len(subspells_dict)
+    spell = spell[start:(end + 2)]
 
-    for i in range(subspells_dict_lenght):
+    # use get_max_score function
+    score = get_max_score(spell, spell_dict)
 
-        points.append(0)
-
-        points[i] = check_spell(spell, subspells_dict)
-
-        if points[i] < 0:
-            points[i] = 0
-
-        swich_dict(subspells_dict)
-
-    print(points)
-    points = max(points)
-
-    return(points)
-
-
-spell = input('Please get a spell: ')
-
-# spell = 'feaineain'
-
-print(damage(spell))
+    return score
